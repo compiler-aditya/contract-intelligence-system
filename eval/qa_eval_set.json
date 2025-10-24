@@ -1,0 +1,162 @@
+[
+  {
+    "id": "q1",
+    "document_type": "MSA",
+    "question": "What are the payment terms in this agreement?",
+    "expected_answer": "Monthly payments of $10,000 USD, payable within 30 days of invoice",
+    "expected_keywords": ["10,000", "monthly", "30 days", "invoice"],
+    "category": "payment_terms"
+  },
+  {
+    "id": "q2",
+    "document_type": "MSA",
+    "question": "Who are the parties to this contract?",
+    "expected_answer": "TechCorp Inc. and ServiceProvider LLC",
+    "expected_keywords": ["TechCorp", "ServiceProvider"],
+    "category": "parties"
+  },
+  {
+    "id": "q3",
+    "document_type": "MSA",
+    "question": "What is the term of this agreement?",
+    "expected_answer": "24 months initial term, with automatic renewal for 12-month periods",
+    "expected_keywords": ["24 months", "automatic renewal", "12-month"],
+    "category": "term"
+  },
+  {
+    "id": "q4",
+    "document_type": "MSA",
+    "question": "What is the governing law?",
+    "expected_answer": "State of California",
+    "expected_keywords": ["California"],
+    "category": "governing_law"
+  },
+  {
+    "id": "q5",
+    "document_type": "MSA",
+    "question": "What is the liability cap in this contract?",
+    "expected_answer": "Total fees paid in the 12 months preceding the claim",
+    "expected_keywords": ["12 months", "fees paid", "liability"],
+    "category": "liability"
+  },
+  {
+    "id": "q6",
+    "document_type": "MSA",
+    "question": "How much notice is required for termination?",
+    "expected_answer": "60 days written notice",
+    "expected_keywords": ["60 days", "written notice", "termination"],
+    "category": "termination"
+  },
+  {
+    "id": "q7",
+    "document_type": "MSA",
+    "question": "What is the auto-renewal notice period?",
+    "expected_answer": "90 days before the end of the current term",
+    "expected_keywords": ["90 days", "auto-renewal", "notice"],
+    "category": "auto_renewal"
+  },
+  {
+    "id": "q8",
+    "document_type": "MSA",
+    "question": "Are there any confidentiality obligations?",
+    "expected_answer": "Yes, both parties must maintain confidentiality of proprietary information",
+    "expected_keywords": ["confidentiality", "proprietary", "maintain"],
+    "category": "confidentiality"
+  },
+  {
+    "id": "q9",
+    "document_type": "MSA",
+    "question": "Who are the signatories of this agreement?",
+    "expected_answer": "John Smith (CEO of TechCorp) and Jane Doe (President of ServiceProvider)",
+    "expected_keywords": ["John Smith", "Jane Doe", "CEO", "President"],
+    "category": "signatories"
+  },
+  {
+    "id": "q10",
+    "document_type": "MSA",
+    "question": "What are the indemnification provisions?",
+    "expected_answer": "Mutual indemnification for breach of agreement",
+    "expected_keywords": ["indemnification", "breach", "mutual"],
+    "category": "indemnity"
+  },
+  {
+    "id": "q11",
+    "document_type": "NDA",
+    "question": "How long does the confidentiality obligation last?",
+    "expected_answer": "Typically 2-5 years from the effective date or disclosure",
+    "expected_keywords": ["years", "confidentiality"],
+    "category": "confidentiality"
+  },
+  {
+    "id": "q12",
+    "document_type": "NDA",
+    "question": "What information is considered confidential?",
+    "expected_answer": "Trade secrets, business plans, technical information, customer data",
+    "expected_keywords": ["trade secrets", "business", "technical", "customer"],
+    "category": "confidential_info"
+  },
+  {
+    "id": "q13",
+    "document_type": "SaaS",
+    "question": "What is the subscription fee?",
+    "expected_answer": "Monthly or annual subscription fee as specified in order form",
+    "expected_keywords": ["subscription", "fee", "monthly", "annual"],
+    "category": "payment_terms"
+  },
+  {
+    "id": "q14",
+    "document_type": "SaaS",
+    "question": "What are the service level commitments?",
+    "expected_answer": "99.9% uptime guarantee with credits for downtime",
+    "expected_keywords": ["99.9%", "uptime", "guarantee"],
+    "category": "sla"
+  },
+  {
+    "id": "q15",
+    "document_type": "Consulting",
+    "question": "Who owns the intellectual property created?",
+    "expected_answer": "Client owns all IP created during the engagement",
+    "expected_keywords": ["client", "owns", "intellectual property"],
+    "category": "ip_ownership"
+  },
+  {
+    "id": "q16",
+    "document_type": "Consulting",
+    "question": "What is the consultant's rate?",
+    "expected_answer": "Hourly or project-based rate as specified in statement of work",
+    "expected_keywords": ["rate", "hourly", "project"],
+    "category": "payment_terms"
+  },
+  {
+    "id": "q17",
+    "document_type": "Employment",
+    "question": "What is the employee's compensation?",
+    "expected_answer": "Base salary plus benefits as outlined in compensation section",
+    "expected_keywords": ["salary", "benefits", "compensation"],
+    "category": "compensation"
+  },
+  {
+    "id": "q18",
+    "document_type": "Employment",
+    "question": "What is the termination policy?",
+    "expected_answer": "At-will employment with notice period or severance provisions",
+    "expected_keywords": ["at-will", "notice", "termination"],
+    "category": "termination"
+  },
+  {
+    "id": "q19",
+    "document_type": "General",
+    "question": "What happens in case of a dispute?",
+    "expected_answer": "Disputes resolved through arbitration or litigation in specified jurisdiction",
+    "expected_keywords": ["dispute", "arbitration", "litigation"],
+    "category": "dispute_resolution"
+  },
+  {
+    "id": "q20",
+    "document_type": "General",
+    "question": "Can the agreement be amended?",
+    "expected_answer": "Only through written amendment signed by both parties",
+    "expected_keywords": ["amendment", "written", "signed"],
+    "category": "amendments"
+  }
+]

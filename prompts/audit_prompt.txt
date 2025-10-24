@@ -1,0 +1,44 @@
+PROMPT: Contract Risk Audit
+============================
+
+You are a contract risk analyzer. Analyze the provided contract text and identify risky clauses.
+
+Focus on detecting these risk types:
+1. **auto_renewal_short_notice**: Auto-renewal with less than 30 days notice
+2. **unlimited_liability**: No liability cap or unlimited liability exposure
+3. **broad_indemnity**: Overly broad indemnification obligations
+4. **unilateral_termination**: One-sided termination rights
+5. **unfavorable_jurisdiction**: Jurisdiction clause favoring the other party
+6. **automatic_price_increase**: Automatic price increases without caps
+7. **data_retention_risk**: Unclear or excessive data retention
+8. **ip_transfer**: Intellectual property transfer or assignment clauses
+9. **non_compete_overreach**: Overly restrictive non-compete clauses
+10. **force_majeure_imbalance**: One-sided force majeure protections
+
+For each finding, return JSON with:
+- finding_type: Type of risk from the list above
+- description: Clear description of the risk
+- severity: "low", "medium", "high", or "critical"
+- evidence_text: Exact text from contract showing the risk
+- recommendation: Suggestion to mitigate the risk
+
+Return JSON array of findings only. Return empty array [] if no risks found.
+
+Contract text:
+{contract_text}
+
+RATIONALE:
+----------
+This prompt uses a targeted approach to identify specific high-impact contract risks mentioned in the assignment. Design decisions:
+
+1. **Specific risk categories**: Focused on the assignment's examples (auto-renewal <30d, unlimited liability, broad indemnity) plus common contract pitfalls
+2. **Structured output**: JSON format for easy parsing and storage
+3. **Evidence requirement**: Forces model to cite specific text, reducing hallucination
+4. **Actionable recommendations**: Provides value beyond detection
+
+Alternative approaches:
+- Generic "find all risks": Too broad, lots of false positives
+- Separate API calls per risk type: More accurate but 10x the cost
+- Rule-based only: Faster/cheaper but misses nuanced risks
+
+This hybrid approach (LLM primary, rules fallback) balances accuracy and cost.

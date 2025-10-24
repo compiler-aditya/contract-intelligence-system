@@ -4,10 +4,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import time
+import logging
 
 from app.core.config import settings
 from app.api import ingest, extract, ask, audit, webhook, admin
 from app.core.database import engine, Base
+from app.core.logging_config import setup_logging
+
+# Setup logging with PII redaction
+setup_logging(settings.LOG_LEVEL if hasattr(settings, 'LOG_LEVEL') else "INFO")
+logger = logging.getLogger(__name__)
 
 
 # Startup time for metrics
@@ -18,18 +24,20 @@ startup_time = time.time()
 async def lifespan(app: FastAPI):
     """Application lifespan events"""
     # Startup
-    print(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
-    print(f"Environment: {settings.ENVIRONMENT}")
+    logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
+    logger.info(f"Environment: {settings.ENVIRONMENT}")
 
     # Create database tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+    logger.info("Application startup complete")
     yield
 
     # Shutdown
-    print("Shutting down...")
+    logger.info("Shutting down application...")
     await engine.dispose()
+    logger.info("Application shutdown complete")
 
 
 # Create FastAPI app
