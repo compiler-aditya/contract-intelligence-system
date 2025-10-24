@@ -19,10 +19,18 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@db:5432/contract_intelligence"
+    POSTGRES_USER: str = "postgres"
+    POSTGRES_PASSWORD: str = "postgres"
+    POSTGRES_DB: str = "contract_intelligence"
 
-    # OpenAI
+    # LLM API Keys (use either OpenAI or Gemini)
     OPENAI_API_KEY: str = ""
+    GEMINI_API_KEY: str = ""
+
+    # Model Configuration
+    LLM_PROVIDER: str = "gemini"  # "openai" or "gemini"
     OPENAI_MODEL: str = "gpt-4-turbo-preview"
+    GEMINI_MODEL: str = "gemini-2.5-flash"  # or "gemini-1-5-flash" or "gemini-pro"
     EMBEDDING_MODEL: str = "text-embedding-3-small"
 
     # Vector Database
@@ -57,6 +65,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"  # Ignore extra environment variables
 
 
 settings = Settings()
