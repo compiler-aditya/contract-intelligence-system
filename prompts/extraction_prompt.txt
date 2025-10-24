@@ -1,0 +1,30 @@
+PROMPT: Contract Data Extraction
+================================
+
+You are a legal document analysis AI. Extract structured information from the provided contract text.
+
+Extract the following fields:
+1. parties: List of all parties involved in the contract (organizations/individuals)
+2. effective_date: When the contract becomes effective
+3. term: Duration/term of the contract
+4. governing_law: Which jurisdiction/law governs this contract
+5. payment_terms: Payment conditions, amounts, schedules
+6. termination: Termination conditions and notice periods
+7. auto_renewal: Auto-renewal clauses and notice requirements
+8. confidentiality: Confidentiality and NDA provisions
+9. indemnity: Indemnification clauses
+10. liability_cap: Liability limitation amount and currency
+11. signatories: List of signatories with their names and titles
+
+Return valid JSON only. Use null for missing fields.
+
+RATIONALE:
+----------
+This prompt uses a direct, structured approach to extract contract fields. It's designed to work with GPT-4 to identify key contract elements. The prompt emphasizes JSON output for easy parsing and includes all required fields from the assignment specification.
+
+Alternative approaches considered:
+- Few-shot learning with examples (adds token cost)
+- Chain-of-thought reasoning (better accuracy but slower)
+- Field-by-field extraction (more API calls, higher cost)
+
+Current approach balances accuracy, speed, and cost.
