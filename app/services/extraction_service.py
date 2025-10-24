@@ -2,20 +2,48 @@
 import json
 import re
 from typing import Dict, Optional, List
-from openai import OpenAI
 from app.core.config import settings
+
+# Import LLM clients based on provider
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
+
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None
 
 
 class ExtractionService:
     """Extract structured fields from contract text"""
 
     def __init__(self):
-        self.client = OpenAI(api_key=settings.OPENAI_API_KEY) if settings.OPENAI_API_KEY else None
-        self.use_llm = bool(settings.OPENAI_API_KEY)
+        self.provider = settings.LLM_PROVIDER
+
+        if self.provider == "gemini" and settings.GEMINI_API_KEY:
+            if genai:
+                genai.configure(api_key=settings.GEMINI_API_KEY)
+                self.client = genai.GenerativeModel(settings.GEMINI_MODEL)
+                self.use_llm = True
+            else:
+                self.client = None
+                self.use_llm = False
+        elif self.provider == "openai" and settings.OPENAI_API_KEY:
+            if OpenAI:
+                self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
+                self.use_llm = True
+            else:
+                self.client = None
+                self.use_llm = False
+        else:
+            self.client = None
+            self.use_llm = False
 
     def extract_with_llm(self, text: str) -> Dict:
         """
-        Extract contract data using LLM (GPT-4)
+        Extract contract data using LLM (Gemini or GPT-4)
 
         Args:
             text: Contract text to extract from
@@ -24,7 +52,7 @@ class ExtractionService:
             Dictionary with extracted fields
         """
         if not self.client:
-            raise ValueError("OpenAI API key not configured")
+            raise ValueError(f"{self.provider.upper()} API key not configured")
 
         # Load extraction prompt
         prompt = """You are a legal document analysis AI. Extract structured information from the provided contract text.
@@ -49,17 +77,31 @@ Contract text:
 """
 
         try:
-            response = self.client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
-                messages=[
-                    {"role": "system", "content": "You are a legal contract analysis expert. Extract data and return only valid JSON."},
-                    {"role": "user", "content": f"{prompt}\n\n{text[:8000]}"}  # Limit text to avoid token limits
-                ],
-                temperature=0.1,
-                response_format={"type": "json_object"}
-            )
+            if self.provider == "gemini":
+                # Gemini API call
+                full_prompt = f"{prompt}\n\n{text[:8000]}"
+                response = self.client.generate_content(full_prompt)
+                result_text = response.text
 
-            result = json.loads(response.choices[0].message.content)
+                # Extract JSON from response (Gemini might wrap it in markdown)
+                if "```json" in result_text:
+                    result_text = result_text.split("```json")[1].split("```")[0].strip()
+                elif "```" in result_text:
+                    result_text = result_text.split("```")[1].split("```")[0].strip()
+
+                result = json.loads(result_text)
+            else:
+                # OpenAI API call
+                response = self.client.chat.completions.create(
+                    model=settings.OPENAI_MODEL,
+                    messages=[
+                        {"role": "system", "content": "You are a legal contract analysis expert. Extract data and return only valid JSON."},
+                        {"role": "user", "content": f"{prompt}\n\n{text[:8000]}"}
+                    ],
+                    temperature=0.1,
+                    response_format={"type": "json_object"}
+                )
+                result = json.loads(response.choices[0].message.content)
 
             # Normalize the output
             return self._normalize_extraction(result)
