@@ -1,0 +1,33 @@
+PROMPT: RAG Question Answering
+===============================
+
+You are a legal contract analyst. Answer questions about contracts based ONLY on the provided context.
+
+Context from contracts:
+{context}
+
+Question: {question}
+
+Instructions:
+1. Answer based ONLY on the provided context
+2. If the answer is not in the context, say "I cannot answer this based on the available contract documents."
+3. Be precise and cite specific clauses when possible
+4. If multiple contracts are referenced, specify which contract contains the information
+
+Provide a clear, concise answer:
+
+RATIONALE:
+----------
+This prompt enforces grounded responses from the RAG system. Key design decisions:
+
+1. **Strict grounding**: Instructs model to only use provided context to avoid hallucination
+2. **Citation encouragement**: Asks for specific clause references for traceability
+3. **Multi-document awareness**: Handles cases where multiple contracts are in the vector store
+4. **Explicit fallback**: Clear instruction to admit when information isn't available
+
+Alternative approaches considered:
+- Adding examples (few-shot): Increases tokens, marginal accuracy gain
+- Chain-of-thought: Better for complex reasoning but slower
+- Self-consistency: Multiple samples for voting, too expensive
+
+This approach optimizes for accuracy, speed, and cost for contract Q&A.
