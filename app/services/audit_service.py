@@ -2,18 +2,45 @@
 import json
 import re
 from typing import List, Dict
-from openai import OpenAI
-
 from app.core.config import settings
 from app.models.document import SeverityLevel
+
+# Import LLM clients based on provider
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
+
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None
 
 
 class AuditService:
     """Audit contracts for risky clauses"""
 
     def __init__(self):
-        self.client = OpenAI(api_key=settings.OPENAI_API_KEY) if settings.OPENAI_API_KEY else None
-        self.use_llm = bool(settings.OPENAI_API_KEY)
+        self.provider = settings.LLM_PROVIDER
+
+        if self.provider == "gemini" and settings.GEMINI_API_KEY:
+            if genai:
+                genai.configure(api_key=settings.GEMINI_API_KEY)
+                self.client = genai.GenerativeModel(settings.GEMINI_MODEL)
+                self.use_llm = True
+            else:
+                self.client = None
+                self.use_llm = False
+        elif self.provider == "openai" and settings.OPENAI_API_KEY:
+            if OpenAI:
+                self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
+                self.use_llm = True
+            else:
+                self.client = None
+                self.use_llm = False
+        else:
+            self.client = None
+            self.use_llm = False
 
     def audit_with_llm(self, text: str) -> List[Dict]:
         """
@@ -26,7 +53,7 @@ class AuditService:
             List of findings
         """
         if not self.client:
-            raise ValueError("OpenAI API key not configured")
+            raise ValueError(f"{self.provider.upper()} API key not configured")
 
         prompt = """You are a contract risk analyzer. Analyze the provided contract text and identify risky clauses.
 
@@ -55,17 +82,32 @@ Contract text:
 """
 
         try:
-            response = self.client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
-                messages=[
-                    {"role": "system", "content": "You are a contract risk analyzer. Return only valid JSON."},
-                    {"role": "user", "content": f"{prompt}\n\n{text[:10000]}"}  # Limit to 10k chars
-                ],
-                temperature=0.2,
-                response_format={"type": "json_object"}
-            )
+            if self.provider == "gemini":
+                # Gemini API call
+                full_prompt = f"{prompt}\n\n{text[:10000]}"
+                response = self.client.generate_content(full_prompt)
+                result_text = response.text
 
-            result = json.loads(response.choices[0].message.content)
+                # Extract JSON from response (Gemini might wrap it in markdown)
+                if "```json" in result_text:
+                    result_text = result_text.split("```json")[1].split("```")[0].strip()
+                elif "```" in result_text:
+                    result_text = result_text.split("```")[1].split("```")[0].strip()
+
+                result = json.loads(result_text)
+            else:
+                # OpenAI API call
+                response = self.client.chat.completions.create(
+                    model=settings.OPENAI_MODEL,
+                    messages=[
+                        {"role": "system", "content": "You are a contract risk analyzer. Return only valid JSON."},
+                        {"role": "user", "content": f"{prompt}\n\n{text[:10000]}"}
+                    ],
+                    temperature=0.2,
+                    response_format={"type": "json_object"}
+                )
+                result = json.loads(response.choices[0].message.content)
+
             findings = result.get("findings", [])
 
             # Normalize findings
