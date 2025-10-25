@@ -1,9 +1,18 @@
 """RAG service for question answering"""
 from typing import List, Dict, Optional, Tuple
-from openai import OpenAI
-
 from app.core.config import settings
 from app.services.vector_store import VectorStore
+
+# Import LLM clients based on provider
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
+
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None
 
 
 class RAGService:
@@ -11,7 +20,21 @@ class RAGService:
 
     def __init__(self):
         self.vector_store = VectorStore()
-        self.openai_client = OpenAI(api_key=settings.OPENAI_API_KEY) if settings.OPENAI_API_KEY else None
+        self.provider = settings.LLM_PROVIDER
+
+        if self.provider == "gemini" and settings.GEMINI_API_KEY:
+            if genai:
+                genai.configure(api_key=settings.GEMINI_API_KEY)
+                self.client = genai.GenerativeModel(settings.GEMINI_MODEL)
+            else:
+                self.client = None
+        elif self.provider == "openai" and settings.OPENAI_API_KEY:
+            if OpenAI:
+                self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
+            else:
+                self.client = None
+        else:
+            self.client = None
 
     def answer_question(
         self,
@@ -30,8 +53,8 @@ class RAGService:
         Returns:
             Tuple of (answer, citations)
         """
-        if not self.openai_client:
-            raise ValueError("OpenAI API key not configured for RAG")
+        if not self.client:
+            raise ValueError(f"{self.provider.upper()} API key not configured for RAG")
 
         # Retrieve relevant chunks
         relevant_chunks = self.vector_store.query(
@@ -69,17 +92,22 @@ Provide a clear, concise answer:"""
 
         # Get answer from LLM
         try:
-            response = self.openai_client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
-                messages=[
-                    {"role": "system", "content": "You are a legal contract analyst. Answer questions based only on the provided context."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.3,
-                max_tokens=1000
-            )
-
-            answer = response.choices[0].message.content
+            if self.provider == "gemini":
+                # Gemini API call
+                response = self.client.generate_content(prompt)
+                answer = response.text
+            else:
+                # OpenAI API call
+                response = self.client.chat.completions.create(
+                    model=settings.OPENAI_MODEL,
+                    messages=[
+                        {"role": "system", "content": "You are a legal contract analyst. Answer questions based only on the provided context."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.3,
+                    max_tokens=1000
+                )
+                answer = response.choices[0].message.content
 
         except Exception as e:
             raise ValueError(f"Error generating answer: {str(e)}")
