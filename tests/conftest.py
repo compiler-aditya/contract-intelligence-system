@@ -54,12 +54,8 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 @pytest.fixture(scope="function")
-async def test_app(db_session: AsyncSession):
-    """Create test app with database override"""
-    async def override_get_db():
-        yield db_session
-
-    app.dependency_overrides[get_db] = override_get_db
+def test_app():
+    """Create test app"""
     yield app
     app.dependency_overrides.clear()
 
