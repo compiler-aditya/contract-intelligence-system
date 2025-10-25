@@ -8,6 +8,8 @@ from app.core.database import get_db
 from app.models.schemas import AuditRequest, AuditResponse, AuditFinding as AuditFindingSchema
 from app.models.document import Document, AuditFinding, ProcessingStatus, SeverityLevel
 from app.services.audit_service import AuditService
+from app.api.admin import increment_metric
+from app.api.webhook import send_webhook_event
 
 router = APIRouter()
 
@@ -93,6 +95,21 @@ async def audit_contract(
         db.add(audit_finding)
 
     await db.commit()
+
+    # Increment metrics
+    increment_metric("audits_completed")
+
+    # Trigger webhook event
+    await send_webhook_event(
+        event_type="audit.completed",
+        document_id=request.document_id,
+        data={
+            "audit_method": "llm" if use_llm else "rule-based",
+            "total_findings": len(findings),
+            "risk_score": risk_score,
+            "status": "completed"
+        }
+    )
 
     # Build response
     formatted_findings = [

@@ -110,7 +110,7 @@ class AuditFinding(Base):
 
     # Additional context
     recommendation = Column(Text, nullable=True)
-    metadata = Column(JSON, default=dict)
+    finding_metadata = Column(JSON, default=dict)
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)

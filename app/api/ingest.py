@@ -11,6 +11,8 @@ from app.core.config import settings
 from app.models.schemas import IngestResponse
 from app.models.document import Document, ProcessingStatus
 from app.services.pdf_processor import PDFProcessor
+from app.api.admin import increment_metric
+from app.api.webhook import send_webhook_event
 
 router = APIRouter()
 
@@ -113,6 +115,19 @@ async def ingest_documents(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error saving documents to database: {str(e)}"
+        )
+
+    # Increment metrics and trigger webhooks for each document
+    for doc_id in document_ids:
+        increment_metric("documents_ingested")
+        # Trigger webhook event
+        await send_webhook_event(
+            event_type="document.ingested",
+            document_id=doc_id,
+            data={
+                "filename": files[document_ids.index(doc_id)].filename if document_ids.index(doc_id) < len(files) else "unknown",
+                "status": "completed"
+            }
         )
 
     return IngestResponse(

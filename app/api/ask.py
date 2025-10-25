@@ -11,6 +11,7 @@ from app.core.config import settings
 from app.models.schemas import AskRequest, AskResponse, Citation
 from app.models.document import Document, ProcessingStatus
 from app.services.rag_service import RAGService
+from app.api.admin import increment_metric
 
 router = APIRouter()
 
@@ -92,6 +93,9 @@ async def ask_question(
         )
         for c in citations
     ]
+
+    # Increment metrics
+    increment_metric("questions_asked")
 
     return AskResponse(
         answer=answer,

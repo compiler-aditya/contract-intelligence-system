@@ -8,6 +8,8 @@ from app.core.database import get_db
 from app.models.schemas import ExtractRequest, ExtractResponse
 from app.models.document import Document, ExtractedData, ProcessingStatus
 from app.services.extraction_service import ExtractionService
+from app.api.admin import increment_metric
+from app.api.webhook import send_webhook_event
 
 router = APIRouter()
 
@@ -114,6 +116,20 @@ async def extract_data(
         db.add(extracted_data)
 
     await db.commit()
+
+    # Increment metrics
+    increment_metric("extractions_performed")
+
+    # Trigger webhook event
+    await send_webhook_event(
+        event_type="extraction.completed",
+        document_id=request.document_id,
+        data={
+            "extraction_method": "llm" if use_llm else "rule-based",
+            "parties_found": len(extracted_fields.get("parties", [])),
+            "status": "completed"
+        }
+    )
 
     # Build response
     liability_cap = None
